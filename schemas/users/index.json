@@ -1,0 +1,60 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "",
+    "title": "User Input",
+    "description": "Datos que debe recibir el JSON para la ruta api/users de nuestra app",
+    "type": "object",
+    "properties": {
+        "action": {
+            "description": "Acción que llevará a cabo la API siendo posible create o modify, cualquier otra retornando error",
+            "type": "string"
+        },
+        "email": {
+            "description": "Email del usuario a registrar/editar",
+            "type": "string"
+        },
+        "nombre": {
+            "description": "Nombre del usuario a registrar/editar",
+            "type": "string"
+        },
+        "apellido": {
+            "description": "Apellido del usuario a registrar/editar",
+            "type": "string"
+        },
+        "rol": {
+            "description": "Rol del usuario a registrar/editar. Debe ser Gerente, Administrador u Operador",
+            "type": "string"
+        },
+        "address": {
+            "description": "Direccion del usuario a registrar/editar",
+            "type": "string"
+        },
+        "telefono": {
+            "description": "Telefono del usuario a registrar/editar",
+            "type": "string"
+        },
+        "enabled": {
+            "description": "Atributo que determina si el usuario estará o no habilitado",
+            "type": "boolean"
+        },
+        "password": {
+            "description": "Contraseña del usuario a registrar/editar",
+            "type": "string"
+        },
+        "ciudad": {
+            "description": "Ciudad del usuario a registrar/editar",
+            "type": "string"
+        },
+        "required": [
+            "action",
+            "email",
+            "nombre",
+            "apellido",
+            "address",
+            "telefono",
+            "enabled",
+            "password",
+            "ciudad"
+        ]
+    }
+}
