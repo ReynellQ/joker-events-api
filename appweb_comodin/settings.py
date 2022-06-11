@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-v9!#of8u&8q8glq=dwq19k)^p4e52b3g$qihm60zc^5j*%9=3-
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'https://jokerevents-api.herokuapp.com/api/users/auth'
+    'jokerevents-api.herokuapp.com'
 ]
 
 
