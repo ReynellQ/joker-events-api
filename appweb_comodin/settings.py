@@ -37,7 +37,14 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000"
 ]
 CORS_ALLOW_CREDENTIALS = True
-
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
 
 # Application definition
 DJANGO_APPS = ['django.contrib.admin',
@@ -51,10 +58,12 @@ DJANGO_APPS = ['django.contrib.admin',
 MY_APPS = [
     'users.apps.UsersConfig',
     'noticias.apps.NoticiasConfig',
+    'events.apps.EventsConfig'
 ]
 
 THIRD_PARTY_APPS = [
     'corsheaders',
+    'rest_framework'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + MY_APPS + THIRD_PARTY_APPS
