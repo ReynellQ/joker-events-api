@@ -7,14 +7,18 @@ from django.contrib import auth
 from django.utils.decorators import method_decorator
 from django.db.models.functions import Lower
 from .models import Profile
-
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 import json
 from django.views.decorators.csrf import csrf_exempt
+from users.models import Rol
 # Create your views here.
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class Users(View):
+class Users(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.profile.rol == Rol.ADMIN
+
     def get(self, request):
         try:
             list = User.objects.select_related(
@@ -83,6 +87,7 @@ class Auth(View):
             password = data["password"]
             user = auth.authenticate(username=username, password=password)
             res["status"] = user is not None
+            print(user)
             if res["status"]:
                 res["msg"] = {
                     "rol": user.profile.rol,
