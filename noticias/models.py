@@ -13,30 +13,11 @@ utc = pytz.UTC
 
 class News(models.Model):
     title = models.CharField(max_length=50, blank=False)
-    description = models.TextField(max_length=200)
-    image = models.CharField(max_length=200, blank=True)
+    description = models.TextField()
+    image = models.CharField(max_length=200)
     publishedAt = models.DateTimeField("date published")
     createdBy = models.ForeignKey(User, on_delete=models.CASCADE, blank=False)
     visible = models.BooleanField(blank=False)
 
     def __str__(self):
-        return self.title
-
-    def save(self, *args, **kwargs):
-        if not self.checkAttributes():
-            raise ValueError("Los campos no son correctos")
-        super().save(*args, **kwargs)
-
-    def checkAttributes(self):
-        print(datetime.strptime(self.publishedAt, "%Y-%m-%dT%H:%M:%SZ"))
-        date = utc.localize(datetime.strptime(
-            self.publishedAt, "%Y-%m-%dT%H:%M:%SZ"))
-        if self.title == "":
-            return False
-        if self.description == "":
-            return False
-        if date > timezone.now():
-            return False
-        if not self.createdBy.profile.rol == Rol.OP:
-            return False
-        return True
+        return self.title + " " + str(self.publishedAt) + " " + str(self.createdBy)

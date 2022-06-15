@@ -9,24 +9,15 @@ from noticias.handler import BaseHandler, CheckCorrectData, CheckUserExistance, 
 import json
 
 from noticias.models import News
+from noticias.serializer import NewsSerializer, NewsIDSerializer
 from users.models import Rol
 
 
 # Create your views here.
 
 def Public_News(request):
-    def parseData(x):
-        id = x["pk"]
-        x = x["fields"]
-        u: User = User.objects.get(id=x["createdBy"])
-        x["createdBy"] = u.email
-        return x
-    response = News.objects.filter(visible=True)
-    response = serialize('json', response)
-    response = json.loads(response)
-    print(response)
-    response = list(map(lambda x: parseData(x), response))
-    return JsonResponse(response, safe=False)
+    response = NewsSerializer(News.objects.filter(visible=True), many=True)
+    return JsonResponse(response.data, safe=False)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -35,19 +26,8 @@ class NewsView(LoginRequiredMixin, UserPassesTestMixin, View):
         return self.request.user.profile.rol == Rol.OP
 
     def get(self, request):
-        def parseData(x):
-            id = x["pk"]
-            x = x["fields"]
-            u: User = User.objects.get(id=x["createdBy"])
-            x["createdBy"] = u.email
-            x["id"] = id
-            return x
-        response = News.objects.all()
-        response = serialize('json', response)
-        response = json.loads(response)
-        print(response)
-        response = list(map(lambda x: parseData(x), response))
-        return JsonResponse(response, safe=False)
+        response = NewsIDSerializer(News.objects.all(), many=True)
+        return JsonResponse(response.data, safe=False)
 
     def post(self, request):
         data: dict = json.loads(request.body.decode('utf-8'))
