@@ -5,7 +5,6 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.core.serializers import serialize
 from django.views.decorators.csrf import csrf_exempt
-from noticias.handler import BaseHandler, CheckCorrectData, CheckUserExistance, CheckNewExistance
 import json
 
 from noticias.models import News
@@ -30,33 +29,28 @@ class NewsView(LoginRequiredMixin, UserPassesTestMixin, View):
         return JsonResponse(response.data, safe=False)
 
     def post(self, request):
-        data: dict = json.loads(request.body.decode('utf-8'))
+        requestData: dict = json.loads(request.body.decode('utf-8'))
         response = {}
-        if "id" in data.keys():
-            bh = BaseHandler(data)
-            h1 = CheckNewExistance(data)
-            h2 = CheckUserExistance(data)
-            h3 = CheckCorrectData(data)
-            h2.setNext(h3)
-            h1.setNext(h2)
-            bh.setNext(h1)
-            response = bh.handle()
-
-            return JsonResponse(response)
+        if "id" in requestData.keys():
+            serializer = NewsIDSerializer(data=requestData)
         else:
-            bh = BaseHandler(data)
-            h1 = CheckUserExistance(data)
-            h2 = CheckCorrectData(data)
-            h1.setNext(h2)
-            bh.setNext(h1)
-            response = bh.handle()
-            return JsonResponse(response)
+            serializer = NewsSerializer(data=requestData)
+        response["status"] = serializer.is_valid()
+        if response["status"]:
+            serializer.save()
+            response["msg"] = serializer.text
+        else:
+            response["msg"] = serializer.errors
+        return JsonResponse(response)
 
     def delete(self, request):
-        data: dict = json.loads(request.body.decode('utf-8'))
-        ch = CheckNewExistance(data)
-        response = ch.handle()
-        print(response.get("status"))
-        if response.get("status"):
-            News.objects.filter(id=data["id"]).delete()
+        response = {}
+        requestData: dict = json.loads(request.body.decode('utf-8'))
+        try:
+            news = News.objects.get(id=requestData["id"])
+            news.delete()
+            response = {"status": True}
+        except News.DoesNotExist as ndne:
+            response = {"status": False}
+
         return JsonResponse(response)
