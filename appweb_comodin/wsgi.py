@@ -11,6 +11,9 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'appweb_comodin.settings')
+if os.environ.get("DEPLOY") == True:
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'appweb_comodin.deployment_settings')
+else:
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'appweb_comodin.production_settings')
 
 application = get_wsgi_application()
