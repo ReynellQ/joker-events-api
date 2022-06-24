@@ -23,6 +23,7 @@ class NewsSerializer(serializers.Serializer):
         if value > timezone.now():
             raise serializers.ValidationError(
                 _("Date is incorrect."))
+        return value
 
     def validate_createdBy(self, value):
         try:
