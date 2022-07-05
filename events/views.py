@@ -22,10 +22,11 @@ class EventView(LoginRequiredMixin, UserPassesTestMixin, View):
         def make_map(x : Events):
             return {
                     **model_to_dict(x), 
+                    'createdBy':x.createdBy.email,
                     'resources': list(map(lambda r : r.media, MediaEvents.objects.filter(id_event= x.id)))
                 }
 
-        response = EventIDSerializer(list(map( lambda x: make_map(x), Events.objects.all())), many=True)
+        response = EventIDSerializer( list(map( lambda x: make_map(x), Events.objects.all()))  , many=True)
 
 
         
@@ -33,7 +34,10 @@ class EventView(LoginRequiredMixin, UserPassesTestMixin, View):
 
     def post(self, request):
         requestData: dict = json.loads(request.body.decode('utf-8'))
+        print(request.user.id)
+        requestData["createdBy"] = request.user.email
         response = {}
+
         if "id" in requestData.keys():
             serializer = EventIDSerializer(data=requestData)
         else:

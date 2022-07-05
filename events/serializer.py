@@ -9,20 +9,20 @@ class EventSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=50)
     lugar = serializers.CharField(max_length=100)
     image = serializers.CharField(required=False, max_length=200)
-    aforo = serializers.IntegerField()
+    aforo = serializers.IntegerField(min_value = 1) #Minimo 0, positivo
     description = serializers.CharField()
     precioBoleta = serializers.DecimalField(
         default=0.0, max_digits=14, decimal_places=2)
     fechaInicio = serializers.DateTimeField()
     fechaFin = serializers.DateTimeField()
     gmaps = serializers.CharField(max_length=100)
-    disponible = serializers.IntegerField()
+    disponible = serializers.IntegerField(required = False)
     contacto = serializers.CharField(max_length = 100)
     resources = serializers.ListField(
         child=serializers.CharField(max_length=200)
     )
-    createdBy = serializers.CharField( max_length=200)
-    createdAt = serializers.DateTimeField()
+    createdBy = serializers.CharField( max_length=200) #Se carga desde el backend
+    createdAt = serializers.DateTimeField(default= timezone.now) # Se carga desde el backend
     visible = serializers.BooleanField()
 
     text = "Event created."
@@ -47,7 +47,7 @@ class EventSerializer(serializers.Serializer):
     def create(self, data):
         u: User = User.objects.get(username=data.pop('createdBy'))
         media : list = data.pop('resources')
-        e: Events = Events.objects.create(createdBy= u, **data)
+        e: Events = Events.objects.create(createdBy= u, disponible = data["aforo"], **data)
         for i, data in enumerate(media):
             me : MediaEvents = MediaEvents.objects.create(id_event=e, element= i, media = data)
         return e
