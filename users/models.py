@@ -11,6 +11,7 @@ class Rol(models.TextChoices):
     ADMIN = 'admin'
     GER = 'gerente'
     OP = 'operador'
+    PAR = 'participante'
 
 
 class Profile(models.Model):
