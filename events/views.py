@@ -25,8 +25,8 @@ class EventView(LoginRequiredMixin, UserPassesTestMixin, View):
                     'createdBy':x.createdBy.email,
                     'resources': list(map(lambda r : r.media, MediaEvents.objects.filter(id_event= x.id)))
                 }
-
-        response = EventIDSerializer( list(map( lambda x: make_map(x), Events.objects.all()))  , many=True)
+        query = Events.objects.all().order_by('fechaInicio')
+        response = EventIDSerializer( list(map( lambda x: make_map(x), query))  , many=True)
 
 
         
