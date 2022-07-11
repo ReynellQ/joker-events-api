@@ -25,7 +25,7 @@ class NewsView(LoginRequiredMixin, UserPassesTestMixin, View):
         return self.request.user.profile.rol == Rol.OP
 
     def get(self, request):
-        response = NewsIDSerializer(News.objects.all(), many=True)
+        response = NewsIDSerializer(News.objects.all().order_by('publishedAt'), many=True)
         return JsonResponse(response.data, safe=False)
 
     def post(self, request):
