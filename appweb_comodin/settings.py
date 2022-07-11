@@ -28,6 +28,7 @@ SECRET_KEY = 'django-insecure-v9!#of8u&8q8glq=dwq19k)^p4e52b3g$qihm60zc^5j*%9=3-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
+#Erase all this block for production
 CORS_ALLOW_ALL_ORIGINS = True
 SESSION_COOKIE_HTTPONLY = False
 SESSION_COOKIE_SAMESITE = 'None'
@@ -58,7 +59,8 @@ DJANGO_APPS = [
 MY_APPS = [
     'users.apps.UsersConfig',
     'noticias.apps.NoticiasConfig',
-    'events.apps.EventsConfig'
+    'events.apps.EventsConfig',
+    'participants.apps.ParticipantsConfig'
 ]
 
 THIRD_PARTY_APPS = [
