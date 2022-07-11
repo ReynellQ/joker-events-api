@@ -24,28 +24,9 @@ class ParticipantView(View):
             if serializer.is_valid():
                 with transaction.atomic():
                     serializer.process()
-                    raise Exception("ONLY FOR ROLLBACK PURPOSES")
             else:
                 raise Exception(serializer.errors)
-            # participant = ParticipantSerializer(data = requestData["participante"])
-            
-            # with transaction.atomic():
-            #     if not participant.is_valid():
-            #         raise Exception(participant.errors)
-            #     if participant.getParticipant() != None:
-            #         p = participant.getParticipant()
-            #     else:
-            #         p = participant.save()
-                    
-            #     event : Events= Events.objects.get(id=requestData["evento"])
-            #     event.disponible-=1
-            #     event.save()
-            #     if event.description < 0:
-            #         raise Exception("El evento no tiene aforo")
-                
             return JsonResponse({"status" : True})
         except Exception as e:
-            print(repr(e))
-            print(e.args)
-            return JsonResponse({"status" : False})
+            return JsonResponse({"status" : False, "msg" : e.args[0]})
         

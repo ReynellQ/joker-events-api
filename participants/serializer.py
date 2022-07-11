@@ -1,10 +1,11 @@
+
 from django.utils import timezone
 from rest_framework import serializers
 
 from django.utils.translation import gettext as _
 from noticias.models import News
 from django.contrib.auth.models import User
-from participants.models import Participant
+from participants.models import EventInscription, Participant
 from users.models import Profile, Rol
 from events.models import Events
 
@@ -52,9 +53,16 @@ class ParticipantSerializer(serializers.Serializer):
 
 class PaymentSerializer(serializers.Serializer):
     nameOnCard = serializers.CharField()
-    cardNumber = serializers.CharField()
+    cardNumber = serializers.CharField(min_length = 16, max_length = 16)
     expiryDate = serializers.DateField()
-    cvv = serializers.CharField()
+    cvv = serializers.CharField(min_length = 3, max_length = 4)
+
+    def validate_expiryDate(self, value):
+        print(type(value))
+        if value < timezone.now().date():
+            raise serializers.ValidationError("The card is expired")
+        return value
+
 
 class InscriptionSerializer(serializers.Serializer):
     participante = ParticipantSerializer()
@@ -86,7 +94,6 @@ class InscriptionSerializer(serializers.Serializer):
         p = PaymentSerializer(data = value)
         if p.is_valid():
             r = randint(0, 10)
-            print(r)
             if r <= 8:
                 return p
             else:
@@ -99,8 +106,15 @@ class InscriptionSerializer(serializers.Serializer):
         event.disponible-=1
         event.save()
         if event.disponible < 0:
-            raise Exception("El evento no tiene aforo")
-        pass
-
+            raise Exception("Full event")
+        participant = self.validated_data["participante"].instance
+        inscription = EventInscription.objects.filter(idEvent = event, idParticipant = participant)
+        if inscription.count() != 0:
+            raise Exception("Already registered in this event")
+        inscription : EventInscription = EventInscription.objects.create(idEvent = event,
+            idParticipant = participant, status = EventInscription.Status.PRE_INSCRITO, registerDate = timezone.now()
+            )
+        print(inscription)
+        
 
 
