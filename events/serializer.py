@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.utils.translation import gettext as _
 from users.models import Profile, Rol
 from events.models import Events, MediaEvents
+from django.forms.models import model_to_dict
 
 class EventSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=50)
@@ -51,6 +52,20 @@ class EventSerializer(serializers.Serializer):
         for i, data in enumerate(media):
             me : MediaEvents = MediaEvents.objects.create(id_event=e, element= i, media = data)
         return e
+    @staticmethod
+    def make_map(x : Events):
+        return {
+                **model_to_dict(x), 
+                'createdBy':x.createdBy.email,
+                'resources': list(map(lambda r : r.media, MediaEvents.objects.filter(id_event= x.id)))
+            }
+    @staticmethod
+    def getSerializedModel(model):
+        return EventSerializer(EventSerializer.make_map(model)).data
+
+    @staticmethod
+    def getSerializedModels(models):
+        return [EventSerializer.getSerializedModel(model) for model in models]
 
 
 class EventIDSerializer(EventSerializer):
@@ -79,3 +94,11 @@ class EventIDSerializer(EventSerializer):
             me : MediaEvents = MediaEvents.objects.create(id_event=EventIDSerializer.instance, element= i, media = data)
         EventIDSerializer.instance.save()
         return EventIDSerializer.instance
+    
+    @staticmethod
+    def getSerializedModels(models):
+        return [EventIDSerializer.getSerializedModel(model) for model in models]
+
+    @staticmethod
+    def getSerializedModel(model):
+        return EventIDSerializer(EventSerializer.make_map(model)).data

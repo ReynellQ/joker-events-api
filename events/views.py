@@ -19,18 +19,10 @@ class EventView(LoginRequiredMixin, UserPassesTestMixin, View):
         return self.request.user.profile.rol == Rol.OP
 
     def get(self, request):
-        def make_map(x : Events):
-            return {
-                    **model_to_dict(x), 
-                    'createdBy':x.createdBy.email,
-                    'resources': list(map(lambda r : r.media, MediaEvents.objects.filter(id_event= x.id)))
-                }
+
         query = Events.objects.all().order_by('fechaInicio')
-        response = EventIDSerializer( list(map( lambda x: make_map(x), query))  , many=True)
-
-
-        
-        return JsonResponse(response.data, safe=False)
+        response = EventIDSerializer.getSerializedModels(query)
+        return JsonResponse(response, safe=False)
 
     def post(self, request):
         requestData: dict = json.loads(request.body.decode('utf-8'))
