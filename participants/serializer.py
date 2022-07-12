@@ -1,4 +1,3 @@
-
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -21,7 +20,28 @@ class ParticipantSerializer(serializers.Serializer):
     telefono = serializers.CharField()
     address = serializers.CharField()
     birthday = serializers.DateField()
-    password = serializers.CharField()
+    password = serializers.CharField(required = False)
+
+    @staticmethod
+    def make_map(x : Participant):
+        p : Profile = x.profile
+        return {
+                "cedula": x.cedula,
+                "nombre" : p.user.first_name,
+                "apellido" : p.user.last_name,
+                "email" : p.user.username,
+                "ciudad": p.ciudad,
+                "telefono" : p.telefono,
+                "address" : p.address,
+                "birthday" : x.birthdate
+            }
+    @staticmethod
+    def getSerializedModel(model):
+        return ParticipantSerializer(ParticipantSerializer.make_map(model)).data
+
+    @staticmethod
+    def getSerializedModels(models):
+        return [ParticipantSerializer.getSerializedModel(model) for model in models]
 
     def getParticipant(self):
         p = None
