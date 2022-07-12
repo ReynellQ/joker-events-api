@@ -19,10 +19,10 @@ class EventView(LoginRequiredMixin, UserPassesTestMixin, View):
         return self.request.user.profile.rol == Rol.OP
 
     def get(self, request):
-
         query = Events.objects.all().order_by('fechaInicio')
         response = EventIDSerializer.getSerializedModels(query)
         return JsonResponse(response, safe=False)
+
 
     def post(self, request):
         requestData: dict = json.loads(request.body.decode('utf-8'))

@@ -6,6 +6,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
 
+
 from participants.models import Participant, EventInscription
 from users.models import Rol
 
@@ -42,8 +43,7 @@ class ParticipantView(View):
             return JsonResponse({"status" : True})
         except Exception as e:
             return JsonResponse({"status" : False, "msg" : e.args[0]})
-
-
+            
 @method_decorator(csrf_exempt, name='dispatch')
 class EventInscriptionView(View):
     def get(self, request, event_id):
@@ -61,5 +61,5 @@ class EventInscriptionView(View):
 
     def delete(self, request):
         pass
-    
+
         
