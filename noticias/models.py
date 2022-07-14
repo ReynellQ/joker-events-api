@@ -12,7 +12,7 @@ utc = pytz.UTC
 
 
 class News(models.Model):
-    title = models.CharField(max_length=50, blank=False)
+    title = models.TextField(blank=False)
     description = models.TextField()
     image = models.CharField(max_length=200, blank=True)
     publishedAt = models.DateTimeField("date published")
