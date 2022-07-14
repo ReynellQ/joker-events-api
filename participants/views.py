@@ -52,7 +52,7 @@ class EventInscriptionView(View):
         response = []
         try:
             e : Events = Events.objects.get(id = event_id)
-            listOfParticipants = [q.idParticipant for q in EventInscription.objects.filter(idEvent = e)]
+            listOfParticipants = [q.idParticipant for q in EventInscription.objects.filter(idEvent = e, status = EventInscription.Status.INSCRITO)]
             response = ParticipantSerializer.getSerializedModels(listOfParticipants)
         except Exception as e:
             pass
