@@ -19,5 +19,7 @@ class News(models.Model):
     createdBy = models.ForeignKey(User, on_delete=models.CASCADE, blank=False)
     visible = models.BooleanField(blank=False)
 
+    class Meta:
+        ordering = ('-publishedAt',)
     def __str__(self):
         return self.title + " " + str(self.publishedAt) + " " + str(self.createdBy)
