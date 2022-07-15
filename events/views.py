@@ -20,13 +20,12 @@ class EventView(LoginRequiredMixin, UserPassesTestMixin, View):
 
     def get(self, request):
         query = Events.objects.all().order_by('fechaInicio')
-        response = EventIDSerializer.getSerializedModels(query)
+        response = EventIDSerializer(query, many = True).data
         return JsonResponse(response, safe=False)
 
 
     def post(self, request):
         requestData: dict = json.loads(request.body.decode('utf-8'))
-        print(request.user.id)
         requestData["createdBy"] = request.user.email
         response = {}
 
