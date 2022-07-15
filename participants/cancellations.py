@@ -2,6 +2,7 @@ from django.db import transaction
 
 from events.models import Events
 from participants.models import EventInscription
+from participants.serializer import CancellationRequestSerializer
 
 
 class CancellationRequests(object):
@@ -11,21 +12,28 @@ class CancellationRequests(object):
             self.requests = {}
         return self.instance
     
-    def addRequest(self, request : EventInscription):
-        self.requests[request.id] = request
-        pass
+    def addRequest(self, request : CancellationRequestSerializer):
+        with transaction.atomic():
+            inscription : EventInscription = request.instance
+            inscription.status = EventInscription.Status.DEVOLUCION
+            inscription.save()
+            self.requests[inscription.id] = request
+        
 
     def listRequests(self):
-        pass
+        return list(self.requests.values())
 
     def accept(self, id):
         with transaction.atomic():
-            request : EventInscription = self.requests[id]
-            event : Events = request.idEvent
+            request : CancellationRequestSerializer = self.requests[id]
+            inscription : EventInscription = request.instance
+            event : Events = inscription.idEvent
             event.disponible+=1
             event.save()
-            request.status = EventInscription.Status.CANCELADO
-
+            inscription.status = EventInscription.Status.CANCELADO
+            inscription.save()
+            return self.requests.pop(id)
+        
 
     def reject(self, id):
         pass
