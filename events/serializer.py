@@ -22,8 +22,8 @@ class EventSerializer(serializers.Serializer):
     resources = serializers.ListField(
         child=serializers.CharField(max_length=200)
     )
-    createdBy = serializers.CharField( max_length=200) #Se carga desde el backend
-    createdAt = serializers.DateTimeField(default= timezone.now) # Se carga desde el backend
+    createdBy = serializers.CharField( max_length=200)
+    createdAt = serializers.DateTimeField(default= timezone.now)
     visible = serializers.BooleanField()
 
     text = "Event created."
@@ -52,20 +52,14 @@ class EventSerializer(serializers.Serializer):
         for i, data in enumerate(media):
             me : MediaEvents = MediaEvents.objects.create(id_event=e, element= i, media = data)
         return e
-    @staticmethod
-    def make_map(x : Events):
-        return {
-                **model_to_dict(x), 
-                'createdBy':x.createdBy.email,
-                'resources': list(map(lambda r : r.media, MediaEvents.objects.filter(id_event= x.id)))
-            }
-    @staticmethod
-    def getSerializedModel(model):
-        return EventSerializer(EventSerializer.make_map(model)).data
 
-    @staticmethod
-    def getSerializedModels(models):
-        return [EventSerializer.getSerializedModel(model) for model in models]
+    def to_representation(self, instance):
+        ret = {
+                **model_to_dict(instance),
+                'createdBy':instance.createdBy.email,
+                'resources': list(map(lambda r : r.media, MediaEvents.objects.filter(id_event= instance.id)))
+            }
+        return ret
 
 
 class EventIDSerializer(EventSerializer):
@@ -95,10 +89,3 @@ class EventIDSerializer(EventSerializer):
         EventIDSerializer.instance.save()
         return EventIDSerializer.instance
     
-    @staticmethod
-    def getSerializedModels(models):
-        return [EventIDSerializer.getSerializedModel(model) for model in models]
-
-    @staticmethod
-    def getSerializedModel(model):
-        return EventIDSerializer(EventSerializer.make_map(model)).data
