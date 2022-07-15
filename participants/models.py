@@ -14,7 +14,6 @@ class Participant(models.Model):
 
 class EventInscription(models.Model):
     class Status(models.TextChoices):
-        PRE_INSCRITO = "PI"
         INSCRITO = "I"
         CANCELADO = "C"
         DEVOLUCION = "D"
@@ -24,3 +23,9 @@ class EventInscription(models.Model):
     registerDate = models.DateTimeField()
     class Meta():
         db_table = 'event_inscription'
+
+
+class Devolution(models.Model):
+    inscription = models.ForeignKey(EventInscription, on_delete=models.CASCADE)
+    motivo = models.TextField()
+    solicitudDate = models.DateTimeField()
