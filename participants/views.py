@@ -1,13 +1,16 @@
+from cgitb import handler
+from urllib import response
 from django.http import JsonResponse,HttpResponseForbidden, HttpResponse
 from django.shortcuts import render
 from django.views import View
 from django.db import transaction
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from participants.cancellations import CancellationRequests
 
 
 
-from participants.models import Participant, EventInscription
+from participants.models import Devolution, Participant, EventInscription
 from users.models import Rol
 
 import json
@@ -15,7 +18,7 @@ import json
 from events.serializer import EventIDSerializer, EventSerializer
 from events.models import Events
 
-from participants.serializer import InscriptionSerializer, ParticipantSerializer
+from participants.serializer import CancellationRequestSerializer, InscriptionSerializer, ParticipantSerializer
 
 # Create your views here.
 
@@ -27,7 +30,7 @@ class ParticipantView(View):
         p : Participant = Participant.objects.get(profile = request.user.profile)
         listOfEvents = [q.idEvent for q in EventInscription.objects.filter(idParticipant = p)]
 
-        listOfEvents = EventSerializer.getSerializedModels(listOfEvents)
+        listOfEvents = EventSerializer(listOfEvents, many = True).data
         return JsonResponse(listOfEvents, safe = False)
 
 
@@ -44,6 +47,8 @@ class ParticipantView(View):
         except Exception as e:
             return JsonResponse({"status" : False, "msg" : e.args[0]})
             
+
+
 @method_decorator(csrf_exempt, name='dispatch')
 class EventInscriptionView(View):
     def get(self, request, event_id):
@@ -52,14 +57,56 @@ class EventInscriptionView(View):
         response = []
         try:
             e : Events = Events.objects.get(id = event_id)
-            listOfParticipants = [q.idParticipant for q in EventInscription.objects.filter(idEvent = e, status = EventInscription.Status.INSCRITO)]
-            response = ParticipantSerializer.getSerializedModels(listOfParticipants)
+            listOfParticipants = [q.idParticipant.profile.user for q in EventInscription.objects.filter(idEvent = e, status = EventInscription.Status.INSCRITO)]
+            print(listOfParticipants)
+            response = ParticipantSerializer(listOfParticipants, many = True).data
         except Exception as e:
-            pass
+            print(repr(e))
         return JsonResponse(response, safe = False)
         
 
-    def delete(self, request):
-        pass
+    def delete(self, request, event_id):
+        if not request.user.is_authenticated or request.user.profile.rol != Rol.PAR:
+            return HttpResponseForbidden()
+        response = {}
+        try:
+            requestData: dict = json.loads(request.body.decode('utf-8'))
+            e : Events = Events.objects.get(id = event_id)
+            p : Participant = Participant.objects.get(profile = request.user.profile)
+            ei : EventInscription = EventInscription.objects.get(idEvent = e, status = EventInscription.Status.INSCRITO, idParticipant = p)
+            requestData["cedula"] = p.cedula
+            requestData["evento"] = event_id
+            serializer = CancellationRequestSerializer(data = requestData)
+            
+            if serializer.is_valid():
+                serializer.save()
+                response = {"status" : True, "msg" : "Solicitud de devolución enviada correctamente"}
+            else:
+                response = {"status" : False, "msg" : serializer.errors}
+            print(response)
+        except EventInscription.DoesNotExist as dne:
+            response = {"status" : False, "msg" : "El participante no está inscrito a dicho evento"}
+        except Exception as e:
+            print(repr(e))
 
         
+        return JsonResponse(response)
+
+        
+@method_decorator(csrf_exempt, name='dispatch')
+class DevolutionView(View):
+    def get(self, request):
+        if not request.user.is_authenticated or request.user.profile.rol != Rol.OP:
+            return HttpResponseForbidden()
+        response = {}
+        
+        serializer = CancellationRequestSerializer(Devolution.objects.all())
+
+        return JsonResponse(serializer.data, safe = False)
+        
+
+    def post(self, request, event_id):
+        if not request.user.is_authenticated or request.user.profile.rol != Rol.OP:
+            return HttpResponseForbidden()
+        response = {}
+        return JsonResponse(response)
