@@ -3,6 +3,7 @@ from email.policy import default
 from django.utils import timezone
 from rest_framework import serializers
 
+from django.db import transaction
 from django.utils.translation import gettext as _
 from noticias.models import News
 from django.contrib.auth.models import User
@@ -10,6 +11,7 @@ from participants.models import Devolution, EventInscription, Participant
 from users.models import Profile, Rol
 from events.models import Events
 from users.serializer import UserSerializer
+
 
 class ParticipantSerializer(UserSerializer):
     """
@@ -140,6 +142,7 @@ class InscriptionSerializer(serializers.Serializer):
         print(inscription)
         
 class CancellationRequestSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
     cedula = serializers.CharField()
     evento = serializers.IntegerField()
     nombre = serializers.CharField(required = False)
@@ -156,25 +159,42 @@ class CancellationRequestSerializer(serializers.Serializer):
         p : Participant = ei.idParticipant
         pro : Profile = p.profile
         u : User = pro.user
-
         ret = {
+                'id' : instance.id,
                 'cedula' : p.cedula,
                 'evento' : e.id,
                 'nombre' : u.first_name,
                 'apellido' : u.last_name,
                 'valor' : e.precioBoleta,
-                'diasRestantes' : (e.fechaInicio - instance.solicitudDate).day,
+                'diasRestantes' : (e.fechaInicio - instance.solicitudDate).days,
                 'motivo' : instance.motivo,
                 'solicitudDate' : instance.solicitudDate
             }
         return ret
 
     def create(self, validated_data):
-        e : Events = Events.objects.get(id = validated_data["evento"])
-        p : Participant = Participant.objects.get(cedula = validated_data["cedula"])
-        ei : EventInscription = EventInscription.objects.get(idEvent = e, status = EventInscription.Status.INSCRITO, idParticipant = p)
-        ei.status = EventInscription.Status.DEVOLUCION
-        ei.save()
-        d: Devolution = Devolution(inscription = ei, motivo = validated_data["motivo"], solicitudDate = validated_data["solicitudDate"])
-        d.save()
-        return d
+        with transaction.atomic():
+            e : Events = Events.objects.get(id = validated_data["evento"])
+            p : Participant = Participant.objects.get(cedula = validated_data["cedula"])
+            ei : EventInscription = EventInscription.objects.get(idEvent = e, status = EventInscription.Status.INSCRITO, idParticipant = p)
+            ei.status = EventInscription.Status.DEVOLUCION
+            ei.save()
+            d: Devolution = Devolution(inscription = ei, motivo = validated_data["motivo"], solicitudDate = validated_data["solicitudDate"])
+            d.save()
+            return d
+    def delete(self, instruction):
+        d : Devolution = self.instance
+        if instruction:
+            with transaction.atomic():
+                
+                inscription : EventInscription = d.inscription
+                event : Events = inscription.idEvent
+                event.disponible+=1
+                event.save()
+                inscription.status = EventInscription.Status.CANCELADO
+                inscription.save()
+                d.delete()
+                #Enviar correo
+        else:
+            d.delete()
+            #Enviar corre

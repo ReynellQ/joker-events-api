@@ -83,11 +83,10 @@ class EventInscriptionView(View):
                 response = {"status" : True, "msg" : "Solicitud de devolución enviada correctamente"}
             else:
                 response = {"status" : False, "msg" : serializer.errors}
-            print(response)
         except EventInscription.DoesNotExist as dne:
-            response = {"status" : False, "msg" : "El participante no está inscrito a dicho evento"}
+            response = {"status" : False, "msg" : "No existe dicha solicitud."}
         except Exception as e:
-            print(repr(e))
+            response = {"status" : False, "msg" : "No se pudo procesar la solicitud."}
 
         
         return JsonResponse(response)
@@ -99,14 +98,23 @@ class DevolutionView(View):
         if not request.user.is_authenticated or request.user.profile.rol != Rol.OP:
             return HttpResponseForbidden()
         response = {}
-        
-        serializer = CancellationRequestSerializer(Devolution.objects.all())
-
+        serializer = CancellationRequestSerializer(Devolution.objects.all(), many = True)
         return JsonResponse(serializer.data, safe = False)
         
 
-    def post(self, request, event_id):
+    def post(self, request):
         if not request.user.is_authenticated or request.user.profile.rol != Rol.OP:
             return HttpResponseForbidden()
-        response = {}
+        try:
+            requestData: dict = json.loads(request.body.decode('utf-8'))
+            serializer = CancellationRequestSerializer(Devolution.objects.get(id = requestData["id"]))
+            serializer.delete(requestData["answer"])
+            response = {"status" : True, "msg" : "Solicitud procesada correctamente"}
+        except Devolution.DoesNotExist as dne:
+            response = {"status" : False, "msg" : "No existe dicha solicitud."}
+        except Exception as e:
+            print(repr(e))
+            response = {"status" : False, "msg" : "No se pudo procesar la solicitud."}
+
+        
         return JsonResponse(response)

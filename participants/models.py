@@ -29,3 +29,5 @@ class Devolution(models.Model):
     inscription = models.ForeignKey(EventInscription, on_delete=models.CASCADE)
     motivo = models.TextField()
     solicitudDate = models.DateTimeField()
+    class Meta():
+        db_table = 'devolution'
