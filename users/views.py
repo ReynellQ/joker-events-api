@@ -6,6 +6,9 @@ from django.contrib.auth.models import User
 from django.contrib import auth
 from django.utils.decorators import method_decorator
 from django.db.models.functions import Lower
+from participants.serializer import ParticipantSerializer
+
+from users.serializer import UserSerializer
 from .models import Profile
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 import json
@@ -27,11 +30,9 @@ class Users(LoginRequiredMixin, UserPassesTestMixin, View):
             users = []
             for user in list:
                 u: User = user
-                users.append({
-                    "nombre": u.first_name, "apellido": u.last_name, "ciudad": u.profile.ciudad, "address": u.profile.address,
-                    "telefono": u.profile.telefono, "email": u.username, "enabled": u.is_active, "rol": user.profile.rol,
-                })
-            return JsonResponse({"data": users})
+                if u.profile.rol != Rol.PAR:
+                    users.append(UserSerializer(u).data)
+            return JsonResponse({"data": users}, safe = False)
         except Exception as e:
             print(repr(e))
             return JsonResponse({"msg": 'an error occured'})
@@ -66,17 +67,10 @@ class Users(LoginRequiredMixin, UserPassesTestMixin, View):
 @method_decorator(csrf_exempt, name='dispatch')
 class Auth(View):
     def get(self, request):
-        res = {
-
-        }
+        res = {}
         res["status"] = request.user.is_authenticated
         if res["status"]:
-            res["msg"] = {
-                "rol": request.user.profile.rol,
-                "nombre": request.user.first_name,
-                "apellido": request.user.last_name
-            }
-
+            res["msg"] = ParticipantSerializer(request.user).data if request.user.profile.rol == Rol.PAR else UserSerializer(request.user).data
         return JsonResponse(res)
 
     def post(self, request):
@@ -89,11 +83,7 @@ class Auth(View):
             res["status"] = user is not None
             print(user)
             if res["status"]:
-                res["msg"] = {
-                    "rol": user.profile.rol,
-                    "nombre": user.first_name,
-                    "apellido": user.last_name
-                }
+                res["msg"] = ParticipantSerializer(user).data if user.profile.rol == Rol.PAR else UserSerializer(user).data
                 auth.login(request, user)
             else:
                 res["msg"] = "No pudo logearse"
