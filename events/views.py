@@ -41,3 +41,8 @@ class EventView(LoginRequiredMixin, UserPassesTestMixin, View):
             response["msg"] = serializer.errors
         
         return JsonResponse(response)
+
+def Public_Events(request):
+    query = Events.objects.filter(visible=True).order_by('fechaInicio')
+    response = EventSerializer(query, many = True).data
+    return JsonResponse(response, safe=False)
