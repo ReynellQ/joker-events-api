@@ -96,6 +96,5 @@ class EventIDSerializer(EventSerializer):
                 'createdBy':instance.createdBy.email,
                 'resources': list(map(lambda r : r.media, MediaEvents.objects.filter(id_event= instance.id)))
             }
-        ret.pop('id')
         return ret
     
