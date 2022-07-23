@@ -14,7 +14,7 @@ class Events(models.Model):
     fechaFin = models.DateTimeField()
     gmaps = models.CharField(max_length=100)
     disponible = models.IntegerField()
-    contacto = models.CharField(max_length = 100, default="")
+    contacto = models.TextField(default="")
     createdBy = models.ForeignKey(User, on_delete=models.CASCADE, blank=False)
     createdAt = models.DateTimeField()
     visible = models.BooleanField(default=True)

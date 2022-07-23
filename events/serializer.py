@@ -18,7 +18,7 @@ class EventSerializer(serializers.Serializer):
     fechaFin = serializers.DateTimeField()
     gmaps = serializers.CharField(max_length=100)
     disponible = serializers.IntegerField(required = False)
-    contacto = serializers.CharField(max_length = 100)
+    contacto = serializers.CharField()
     resources = serializers.ListField(
         child=serializers.CharField(max_length=200)
     )
