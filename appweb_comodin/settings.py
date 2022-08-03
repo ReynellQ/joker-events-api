@@ -60,7 +60,8 @@ MY_APPS = [
     'users.apps.UsersConfig',
     'noticias.apps.NoticiasConfig',
     'events.apps.EventsConfig',
-    'participants.apps.ParticipantsConfig'
+    'participants.apps.ParticipantsConfig',
+    'activities.apps.ActivitiesConfig'
 ]
 
 THIRD_PARTY_APPS = [
