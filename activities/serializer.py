@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
-from activities.models import Activity
+from activities.models import Activity, ActivityInscription
 from events.models import Events
+from participants.models import Participant
 
 class ActivitySerializer(serializers.Serializer):
     title = serializers.CharField(max_length=200)
@@ -31,3 +32,14 @@ class ActivityIDSerializer(ActivitySerializer):
     def update(self, instance, validated_data):
         
         return None
+
+class Schedule(serializers.Serializer):
+    participant = serializers.CharField()
+    activities =  serializers.ListField(
+        child=serializers.IntegerField()
+    )
+    def to_representation(self, instance : Participant):
+        ret = {}
+        ret["participant"] = instance.cedula
+        activities = ActivityInscription.objects.filter(idParticipant = instance, status = ActivityInscription.Status.INSCRITO, idParticipant = algo)
+        return ret
