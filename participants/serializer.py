@@ -142,7 +142,7 @@ class InscriptionSerializer(serializers.Serializer):
         print(inscription)
         
 class CancellationRequestSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
+    id = serializers.IntegerField(required = False)
     cedula = serializers.CharField()
     evento = serializers.IntegerField()
     nombre = serializers.CharField(required = False)

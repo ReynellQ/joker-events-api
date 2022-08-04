@@ -28,9 +28,9 @@ class ParticipantView(View):
         if not request.user.is_authenticated or request.user.profile.rol != Rol.PAR:
             return HttpResponseForbidden()
         p : Participant = Participant.objects.get(profile = request.user.profile)
-        listOfEvents = [q.idEvent for q in EventInscription.objects.filter(idParticipant = p)]
+        listOfEvents = [q.idEvent for q in EventInscription.objects.filter(idParticipant = p, status = EventInscription.Status.INSCRITO)]
 
-        listOfEvents = EventSerializer(listOfEvents, many = True).data
+        listOfEvents = EventIDSerializer(listOfEvents, many = True).data
         return JsonResponse(listOfEvents, safe = False)
 
 
