@@ -54,6 +54,7 @@ class ActivitiesView(View):
                         serializer.save()
                         response ={"status" : True, "msg" : "Actividad modificada"}
                     except Exception as e:
+                        print(repr(e))
                         response = {"status" : False, "msg" : "Ocurrió un error"}
                 else:
                     response = {"status" : False, "msg" : serializer.errors}

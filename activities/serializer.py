@@ -37,6 +37,11 @@ class ActivitySerializer(serializers.Serializer):
 class ActivityIDSerializer(ActivitySerializer):
     id = serializers.IntegerField()
 
-    def update(self, instance, validated_data):
-        
-        return None
+    def update(self, instance : Activity, validated_data):
+        instance.title = validated_data["title"]
+        instance.description = validated_data["description"]
+        instance.lugar = validated_data["lugar"]
+        instance.fechaHoraInicio = validated_data["fechaHoraInicio"]
+        instance.fechaHoraFin = validated_data["fechaHoraFin"]
+        instance.save()
+        return instance

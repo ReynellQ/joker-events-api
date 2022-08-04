@@ -16,7 +16,7 @@ from users.models import Rol
 @method_decorator(csrf_exempt, name='dispatch')
 class EventView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
-        return self.request.user.profile.rol == Rol.OP
+        return self.request.user.profile.rol == Rol.OP or self.request.user.profile.rol == Rol.GER
 
     def get(self, request):
         query = Events.objects.all().order_by('fechaInicio')
