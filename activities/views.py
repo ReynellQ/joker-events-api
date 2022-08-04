@@ -27,7 +27,7 @@ from participants.serializer import CancellationRequestSerializer, InscriptionSe
 @method_decorator(csrf_exempt, name='dispatch')
 class ActivitiesView(View):
     def get(self, request):
-        return JsonResponse(ActivitySerializer(Activity.objects.all()), safe = False)
+        return JsonResponse(ActivitySerializer(Activity.objects.all(), many = True).data, safe = False)
 
 
     def post(self,request):
@@ -40,7 +40,7 @@ class ActivitiesView(View):
             if serializer.is_valid():
                 try:
                     serializer.save()
-                    {"status" : True, "msg" : "Actividad creada"}
+                    response = {"status" : True, "msg" : "Actividad creada"}
                 except Exception as e:
                     response = {"status" : False, "msg" : "Ocurrió un error"}
             else:
@@ -52,7 +52,7 @@ class ActivitiesView(View):
                 if serializer.is_valid():
                     try:
                         serializer.save()
-                        {"status" : True, "msg" : "Actividad modificada"}
+                        response ={"status" : True, "msg" : "Actividad modificada"}
                     except Exception as e:
                         response = {"status" : False, "msg" : "Ocurrió un error"}
                 else:

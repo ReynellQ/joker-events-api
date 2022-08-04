@@ -4,6 +4,8 @@ from activities.models import Activity, ActivityInscription
 from events.models import Events
 from participants.models import Participant
 
+from django.forms.models import model_to_dict
+
 class ActivitySerializer(serializers.Serializer):
     title = serializers.CharField(max_length=200)
     description = serializers.CharField()
@@ -12,6 +14,12 @@ class ActivitySerializer(serializers.Serializer):
     fechaHoraFin = serializers.DateTimeField()
     idEvent = serializers.IntegerField()
 
+    def to_representation(self, instance : Activity):
+        ret = {
+                **model_to_dict(instance),
+                'idEvent':instance.idEvent.id
+            }
+        return ret
     def validate_idEvent(self, value):
         try:
             e : Events = Events.objects.get( id = value )
@@ -32,14 +40,3 @@ class ActivityIDSerializer(ActivitySerializer):
     def update(self, instance, validated_data):
         
         return None
-
-class Schedule(serializers.Serializer):
-    participant = serializers.CharField()
-    activities =  serializers.ListField(
-        child=serializers.IntegerField()
-    )
-    def to_representation(self, instance : Participant):
-        ret = {}
-        ret["participant"] = instance.cedula
-        activities = ActivityInscription.objects.filter(idParticipant = instance, status = ActivityInscription.Status.INSCRITO, idParticipant = algo)
-        return ret
