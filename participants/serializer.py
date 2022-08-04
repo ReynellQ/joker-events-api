@@ -1,6 +1,7 @@
 from datetime import datetime
 from email.policy import default
 from django.utils import timezone
+from activities.models import Activity, ActivityInscription
 from rest_framework import serializers
 
 from django.db import transaction
@@ -136,7 +137,14 @@ class InscriptionSerializer(serializers.Serializer):
         inscription : EventInscription = EventInscription.objects.create(idEvent = event,
             idParticipant = participant, status = EventInscription.Status.INSCRITO, registerDate = timezone.now()
             )
+        print(self.validated_data["actividades"])
+        for id_activity in self.validated_data["actividades"]:
+            a : Activity = Activity.objects.get(id = id_activity)
+            act_inscription : ActivityInscription = ActivityInscription.objects.create(
+                idActivity = a, idParticipant = participant, registerDate = timezone.now()
+            )
         print(inscription)
+        
         
 class CancellationRequestSerializer(serializers.Serializer):
     id = serializers.IntegerField(required = False)

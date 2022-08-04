@@ -6,7 +6,7 @@ from django.views import View
 from django.db import transaction
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from activities.models import Activity
+from activities.models import Activity, ActivityInscription
 from activities.serializer import ActivitySerializer, ActivityIDSerializer
 from participants.cancellations import CancellationRequests
 
@@ -69,7 +69,8 @@ class ActivitiesView(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class EventActivitiesView(View):
     def get(self, request, event_id):
-
+        if request.user.is_authenticated and request.user.profile.rol == Rol.PAR:
+            return showMyActivities(request, event_id)
         response = []
         try:
             e : Events = Events.objects.get(id = event_id)
@@ -79,32 +80,21 @@ class EventActivitiesView(View):
         except Events.DoesNotExist as dne:
             response = []
         return JsonResponse(response, safe = False)
-        
 
-        
-@method_decorator(csrf_exempt, name='dispatch')
-class MyActivitiesView(View):
-    def get(self, request):
-        if not request.user.is_authenticated or request.user.profile.rol != Rol.OP:
-            return HttpResponseForbidden()
-        response = {}
-        serializer = CancellationRequestSerializer(Devolution.objects.all(), many = True)
-        return JsonResponse(serializer.data, safe = False)
-        
+def showMyActivities(request, event_id):
+    participant = request.user.profile.participant
+    print(participant)
+    
+    try:
+        e : Events = Events.objects.get(id = event_id)
 
-    def post(self, request):
-        if not request.user.is_authenticated or request.user.profile.rol != Rol.OP:
-            return HttpResponseForbidden()
-        try:
-            requestData: dict = json.loads(request.body.decode('utf-8'))
-            serializer = CancellationRequestSerializer(Devolution.objects.get(id = requestData["id"]))
-            serializer.delete(requestData["answer"])
-            response = {"status" : True, "msg" : "Solicitud procesada correctamente"}
-        except Devolution.DoesNotExist as dne:
-            response = {"status" : False, "msg" : "No existe dicha solicitud."}
-        except Exception as e:
-            print(repr(e))
-            response = {"status" : False, "msg" : "No se pudo procesar la solicitud."}
-
+        query = ActivityInscription.objects.filter(idParticipant = participant)
+        query = list(map(lambda x : x.idActivity , query))
+        query = [ q for q in query if q.idEvent == e]
+        serializer = ActivityIDSerializer(query, many = True)
+        response = serializer.data
+        print(query)
+    except Events.DoesNotExist as dne:
+        response = []
+    return JsonResponse(response, safe = False)
         
-        return JsonResponse(response)
