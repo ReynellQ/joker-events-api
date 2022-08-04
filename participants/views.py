@@ -37,6 +37,8 @@ class ParticipantView(View):
     def post(self,request):
         try:
             requestData: dict = json.loads(request.body.decode('utf-8'))
+            requestData["participante"]["rol"] = "participante"
+            requestData["participante"]["enabled"] = True
             serializer = InscriptionSerializer(data = requestData)
             if serializer.is_valid():
                 with transaction.atomic():

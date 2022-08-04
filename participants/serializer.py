@@ -41,14 +41,6 @@ class ParticipantSerializer(UserSerializer):
     def getSerializedModels(models):
         return [ParticipantSerializer.getSerializedModel(model) for model in models]
 
-    def getParticipant(self):
-        p = None
-        try:
-            p = Participant.objects.get(cedula = self.data["cedula"])
-            self.instance = p
-        except Exception as e:
-            print(repr(e))
-        return p
 
     
     def create(self, data):
@@ -70,6 +62,7 @@ class ParticipantSerializer(UserSerializer):
         return p
     
     def to_representation(self, instance : User):
+        print(instance)
         ret = super().to_representation(instance)
         p : Participant = instance.profile.participant
         ret['cedula'] = p.cedula
@@ -101,10 +94,15 @@ class InscriptionSerializer(serializers.Serializer):
         p = ParticipantSerializer(data = value)
         if not p.is_valid():
             raise serializers.ValidationError(p.errors)
-        if p.getParticipant() == None:
+        try:
+            instance = Participant.objects.get(cedula = value["cedula"])
+            p.instance = instance
+        except Exception as e:
             p = ParticipantSerializer(data = value)
             p.is_valid()
             p.save()
+            print(p.instance)
+            
         return p
     
     def validate_evento(self, value):
