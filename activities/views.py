@@ -62,6 +62,16 @@ class ActivitiesView(View):
                 response = {"status" : False, "msg" : "No existe la actividad"}
             
         return JsonResponse(response)
+    
+    def delete(self, request):
+        requestData: dict = json.loads(request.body.decode('utf-8'))
+        try:
+            a : Activity = Activity.objects.get(id = requestData["id"])
+            a.delete()
+            response = {"status" : True, "msg" : "Actividad eliminada"}
+        except Activity.DoesNotExist as dne:
+            response = {"status" : False, "msg" : "No existe la acitvidad"}
+        return JsonResponse(response)
 
             
 
