@@ -44,5 +44,5 @@ class EventView(LoginRequiredMixin, UserPassesTestMixin, View):
 
 def Public_Events(request):
     query = Events.objects.filter(visible=True).order_by('fechaInicio')
-    response = EventSerializer(query, many = True).data
+    response = EventIDSerializer(query, many = True).data
     return JsonResponse(response, safe=False)
