@@ -6,6 +6,7 @@ from django.views import View
 from django.db import transaction
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from datetime import datetime
 from participants.cancellations import CancellationRequests
 
 
@@ -39,6 +40,8 @@ class ParticipantView(View):
             requestData: dict = json.loads(request.body.decode('utf-8'))
             requestData["participante"]["rol"] = "participante"
             requestData["participante"]["enabled"] = True
+            requestData["payment"]["expiryDate"] = str(datetime.strptime(requestData["payment"]["expiryDate"].replace("/","-"), '%m-%y').date())
+            print(requestData["payment"]["expiryDate"])
             serializer = InscriptionSerializer(data = requestData)
             if serializer.is_valid():
                 with transaction.atomic():

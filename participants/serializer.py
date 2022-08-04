@@ -76,7 +76,6 @@ class PaymentSerializer(serializers.Serializer):
     cvv = serializers.CharField(min_length = 3, max_length = 4)
 
     def validate_expiryDate(self, value):
-        print(type(value))
         if value < timezone.now().date():
             raise serializers.ValidationError("The card is expired")
         return value
